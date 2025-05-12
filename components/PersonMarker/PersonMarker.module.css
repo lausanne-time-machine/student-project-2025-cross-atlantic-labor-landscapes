@@ -1,0 +1,4 @@
+.person_marker {
+    fill: var(--mantine-primary-color-filled);
+    stroke: var(--mantine-primary-color-filled);
+}
