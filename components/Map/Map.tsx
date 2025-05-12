@@ -1,4 +1,4 @@
-import { Autocomplete, ComboboxItem, Flex, Group, Select, Slider, Switch, Title, Text } from "@mantine/core";
+import { Autocomplete, ComboboxItem, Flex, Group, Select, Slider, Switch, Title, Text, useMantineTheme } from "@mantine/core";
 
 import { LatLngExpression } from "leaflet";
 import "leaflet-defaulticon-compatibility";
@@ -21,18 +21,25 @@ interface MapProps {
   city : "lausanne" | "new york"
 }
 
-const colorScale = d3.scaleSequential()
-    .domain([0, 1])
-    .interpolator(d3.interpolateReds);
+function getColorScale() {
 
-function getEllipseData(profession:any, nrGaussians: number){
+  const theme = useMantineTheme();
+  const colorScale = d3.scaleSequential()
+      .domain([0, 1])
+      .interpolator(d3.interpolate(theme.white, theme.colors.space[7]));
+
+  return colorScale;
+}
+
+
+function getEllipseData(profession:any, nrGaussians: number, colorScale: d3.ScaleSequential<string, never>){
 
   if (nrGaussians < 1){
     console.log("can't load data without nr of gaussians selected")
     return []
   }
   let dataArr = []
- 
+
   for (let i = 0; i < nrGaussians; i++){
     
     let color = colorScale(profession["priors_"+nrGaussians][i])
@@ -57,6 +64,7 @@ export default function Map({ position, zoom, city}: MapProps) {
   const [job, setJob] = useState<ComboboxItem | null>(null);
   const [nrGaussians, setNrGaussians] = useState(0)
 
+  const colorScale = getColorScale();
 
   return <>
     <MapContainer center={position} zoom={zoom} style={{ height: "100%", width: "100%"}}>
@@ -94,7 +102,7 @@ export default function Map({ position, zoom, city}: MapProps) {
             (profession['city'] === city)
         ).flatMap((profession, i) => {
           
-          let ellipseDataArr = getEllipseData(profession, nrGaussians);
+          let ellipseDataArr = getEllipseData(profession, nrGaussians, colorScale);
           // console.log(ellipseDataArr);
           return ellipseDataArr.map((ellipseData, j) =>
             <EllipseFromCov center={ellipseData.center} sigma={ellipseData.sigma} options={ellipseData.options} key={i*10 + j}/>
