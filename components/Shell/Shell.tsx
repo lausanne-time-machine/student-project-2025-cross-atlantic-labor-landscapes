@@ -10,6 +10,8 @@ export function Shell({ children }: { children: ReactNode }) {
 
     const pathname = usePathname();
 
+    const base = "/student-project-2025-cross-atlantic-labor-landscapes";
+
     return <AppShell
         header={{ height: 60 }}
         navbar={{
@@ -24,19 +26,19 @@ export function Shell({ children }: { children: ReactNode }) {
             <Burger opened={mobileOpened} onClick={toggleMobile} hiddenFrom="sm" size="sm" />
             <Burger opened={desktopOpened} onClick={toggleDesktop} visibleFrom="sm" size="sm" />
             <Text size='lg'>
-              our nameee
+              our nameee {pathname}
             </Text>
           </Group>
         </AppShell.Header>
         <AppShell.Navbar>
           <NavLink
-            href="/"
+            href={`${base}/`}
             label="home"
             leftSection={<IconHome size={16} stroke={1.5} />}
             active={pathname === '/'}
           />
           <NavLink
-            href="/map"
+            href={`${base}/map`}
             label="map"
             leftSection={<IconMap size={16} stroke={1.5} />}
             active={pathname === '/map'}
