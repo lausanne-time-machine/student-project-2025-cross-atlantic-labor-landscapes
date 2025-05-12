@@ -33,7 +33,7 @@ export function Shell({ children }: { children: ReactNode }) {
         </Text>
       </Group>
     </AppShell.Header>
-    <AppShell.Navbar>
+    <AppShell.Navbar zIndex={1001}>
       <AppShell.Section grow>
         <NavLink
           href={`${BASE}/`}
