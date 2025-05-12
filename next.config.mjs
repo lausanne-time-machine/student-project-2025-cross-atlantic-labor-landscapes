@@ -5,8 +5,10 @@ const withBundleAnalyzer = bundleAnalyzer({
 });
 
 export default withBundleAnalyzer({
-  reactStrictMode: false,
+  reactStrictMode: true,
   eslint: {
     ignoreDuringBuilds: true,
   },
+  output: 'export',
+  basePath: "/student-project-2025-cross-atlantic-labor-landscapes",
 });
