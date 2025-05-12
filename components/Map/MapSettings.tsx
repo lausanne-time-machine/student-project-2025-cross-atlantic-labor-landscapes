@@ -1,6 +1,6 @@
-import { ActionIcon, ComboboxItem, Group, Input, Popover, SegmentedControl, Select, Slider, Stack, Text } from "@mantine/core";
+import { ActionIcon, ComboboxItem, Group, Input, Popover, SegmentedControl, Select, Slider, Stack, Switch, Text } from "@mantine/core";
 import { IconMapCog } from "@tabler/icons-react";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { cityProps } from "./util";
 
 interface settingsProps {
@@ -13,15 +13,27 @@ interface settingsProps {
     setJob: Dispatch<SetStateAction<ComboboxItem | null>>
     nrGaussians: number
     setNrGaussians: Dispatch<SetStateAction<number>>
+    lateData: boolean
+    setLateData: Dispatch<SetStateAction<boolean>>
     city: cityProps
 }
 
 export default function MapSettings(props: settingsProps) {
     const { jobs, layerOpacity, setLayerOpacity,
         layer, setLayer, job, setJob, city,
-        nrGaussians, setNrGaussians } = props;
+        nrGaussians, setNrGaussians, lateData, setLateData } = props;
+
+    const [earlylate, setEarlyLate] = useState(lateData ? 'late' : 'early');
+    
+    useEffect(() => setLateData(earlylate == 'late'), [earlylate])
 
     return <Group gap='sm' style={{ position: "absolute", right: 10, top: 10, zIndex: 800 }}>
+        <SegmentedControl
+            size='sm'
+            value={earlylate}
+            onChange={setEarlyLate}
+            data={[{value: 'early', label: 'early'}, {value: 'late', label: 'late'}]}
+        />
         <Select
             data={jobs.map(job => ({ value: job, label: job }))}
             placeholder="filter by job"

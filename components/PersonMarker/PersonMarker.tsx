@@ -2,7 +2,7 @@ import { CircleMarker, Popup } from "react-leaflet";
 import classes from './PersonMarker.module.css';
 import { Code } from "@mantine/core";
 
-interface personProps {
+export interface personProps {
     city: string;
     year: number;
     id: number;

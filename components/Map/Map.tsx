@@ -1,4 +1,4 @@
-import { ComboboxItem, Flex, Paper, Stack, Text, Title } from "@mantine/core";
+import { ComboboxItem, Paper, Stack, Text, Title } from "@mantine/core";
 
 import "leaflet-defaulticon-compatibility";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
@@ -6,11 +6,12 @@ import "leaflet/dist/leaflet.css";
 import { useState } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
 
-import people from '../../data/all_people_some_ny.json';
+import people_ny from '../../data/ny_people.json';
+import people_ls from '../../data/laus_people.json';
 import professions from '../../data/some_professions.json';
 import ColorBar from "../ColorBar/ColorBar";
 import EllipseFromCov from "../Ellipse/EllipseFromCov";
-import { PersonMarker } from "../PersonMarker/PersonMarker";
+import { PersonMarker, personProps } from "../PersonMarker/PersonMarker";
 import MapSettings from "./MapSettings";
 import { getColorScale, getEllipseData, lausanne, new_york } from "./util";
 
@@ -20,14 +21,18 @@ export default function Map({ city_name }: {
   const [layerOpacity, setLayerOpacity] = useState(1);
   const [layer, setLayer] = useState<string>('berney');
   const [job, setJob] = useState<ComboboxItem | null>(null);
-  const [nrGaussians, setNrGaussians] = useState<number>(0)
+  const [nrGaussians, setNrGaussians] = useState<number>(0);
+  const [lateData, setLateData] = useState(true);
 
   const colorScale = getColorScale();
 
   const city = city_name === 'lausanne' ? lausanne : new_york;
+  let people = (city_name == "new york" ? people_ny : people_ls) as personProps[];
   const jobs = people.map(person => person.job).filter(
     (v, ix, arr) => arr.indexOf(v) === ix
   );
+  let earlyYear =  city_name == "new york" ? 1850 : 1832;
+  let lateYear = city_name == "new york" ? 1879 : 1885;
 
   return <>
     <MapContainer center={city.position} zoom={city.zoom} style={{ height: "100%", width: "100%" }}>
@@ -45,10 +50,11 @@ export default function Map({ city_name }: {
         />
       }
       {
-        people.filter(person => person.city === city_name).filter(
-          person => job ? person['job'] === job.value : true
-        ).map((person, i) =>
-          <PersonMarker person={person} key={i} />)
+        people.filter(
+          person => (job ? person['job'] === job.value : false) &&
+          (lateData ? person["year"] === lateYear : person["year"] === earlyYear)
+        ).map((person, i) => 
+        <PersonMarker person={person} key={i}/>)
       }
       {
         professions.filter(
@@ -73,6 +79,7 @@ export default function Map({ city_name }: {
         layer={layer} setLayer={setLayer}
         job={job} setJob={setJob}
         nrGaussians={nrGaussians} setNrGaussians={setNrGaussians}
+        lateData={lateData} setLateData={setLateData}
         city={city}
       />
       <Paper p='xs' withBorder style={{ position: 'absolute', left: 10, bottom: 10, zIndex: 500 }}>
