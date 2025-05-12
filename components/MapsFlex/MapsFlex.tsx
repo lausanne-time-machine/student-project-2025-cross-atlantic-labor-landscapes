@@ -21,7 +21,7 @@ export function MapsFlex() {
         </Flex>
 
         <Flex className={classes.inner} direction={"column"} gap={"lg"}>
-            <Map position={[46.522, 6.633]} zoom={16} city='new york' />
+            <Map position={[40.7128, -74.006]} zoom={14} city='new york' />
         </Flex>
     </Flex>
 }

@@ -1,4 +1,4 @@
-import { Autocomplete, ComboboxItem, Flex, Group, Select, Slider, Switch, Title, Text, useMantineTheme } from "@mantine/core";
+import { Autocomplete, ComboboxItem, Flex, Group, Select, Slider, Switch, Title, Text, useMantineTheme, ComboboxData } from "@mantine/core";
 
 import { LatLngExpression } from "leaflet";
 import "leaflet-defaulticon-compatibility";
@@ -8,8 +8,9 @@ import { useState } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
 import * as d3 from 'd3';
 
-import people from '../../data/some_people.json';
-import { PersonMarker } from "../PersonMarker/PersonMarker";
+import people_ny from '../../data/ny_people.json';
+import people_ls from '../../data/some_people.json'
+import PersonMarker, {personProps} from "../PersonMarker/PersonMarker";
 import professions from '../../data/some_professions.json';
 import EllipseFromCov from "../Ellipse/EllipseFromCov";
 import ColorBar from "../ColorBar/ColorBar";
@@ -19,6 +20,11 @@ interface MapProps {
   position: LatLngExpression
   zoom: number
   city : "lausanne" | "new york"
+}
+
+interface SelectProps {
+  data: string,
+  value: string
 }
 
 function getColorScale() {
@@ -58,13 +64,33 @@ function getEllipseData(profession:any, nrGaussians: number, colorScale: d3.Scal
   return dataArr
 }
 
+function getUniqueJobs(peopleData:personProps[]) {
+  const jobsSet = new Set(peopleData.map(entry => entry.job));
+  const uniqueJobs = Array.from(jobsSet);
+
+  let selectData:any[] = [];
+  
+  uniqueJobs.forEach(entry =>
+    selectData.push({
+      label: entry,
+      value: entry
+    })
+  )
+  return selectData as ComboboxData;
+}
+
 export default function Map({ position, zoom, city}: MapProps) {
   const [opac, setOpac] = useState(1);
   const [map32, set32] = useState(true);
   const [job, setJob] = useState<ComboboxItem | null>(null);
   const [nrGaussians, setNrGaussians] = useState(0)
+  const [lateData, setLateData] = useState(true)
 
   const colorScale = getColorScale();
+
+  let people = (city == "new york" ? people_ny : people_ls) as personProps[];
+  let earlyYear =  city == "new york" ? 1850 : 1832;
+  let lateYear = city == "new york" ? 1879 : 1832; // TODO: change late year for lausanne
 
   return <>
     <MapContainer center={position} zoom={zoom} style={{ height: "100%", width: "100%"}}>
@@ -91,7 +117,9 @@ export default function Map({ position, zoom, city}: MapProps) {
       }
       {
         people.filter(
-          person => job ? person['job'] === job.value : true
+          person => (job ? person['job'] === job.value : false) &&
+          (person["city"] === city) &&
+          (lateData ? person["year"] === lateYear : person["year"] === earlyYear)
         ).map((person, i) => 
         <PersonMarker person={person} key={i}/>)
       }
@@ -114,7 +142,7 @@ export default function Map({ position, zoom, city}: MapProps) {
         {city}
       </Title>
       <Select
-        data={[{ value: 'architecte', label: 'architecte' }, { value: 'charcuti.', label: 'charcuti.' }]}
+        data={getUniqueJobs(people)}
         placeholder="filter by job"
         value={job ? job.value : null}
         onChange={(_value, option) => setJob(option)}
@@ -135,6 +163,11 @@ export default function Map({ position, zoom, city}: MapProps) {
         checked={map32}
         label='berney / sprengler'
         onChange={(event) => set32(event.currentTarget.checked)}
+      />
+      <Switch
+        checked={lateData}
+        label='early / late'
+        onChange={(event) => setLateData(event.currentTarget.checked)}
       />
       <Slider value={nrGaussians} onChange={setNrGaussians} min={0} max={4} step={1} disabled={job?false:true}
         label='nr gaussians'
