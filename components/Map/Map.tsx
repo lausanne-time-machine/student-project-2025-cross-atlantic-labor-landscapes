@@ -1,154 +1,86 @@
-import { Autocomplete, ComboboxItem, Flex, Group, Select, Slider, Switch, Title, Text, useMantineTheme } from "@mantine/core";
+import { ComboboxItem, Flex, Paper, Stack, Text, Title } from "@mantine/core";
 
-import { LatLngExpression } from "leaflet";
 import "leaflet-defaulticon-compatibility";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import "leaflet/dist/leaflet.css";
 import { useState } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
-import * as d3 from 'd3';
 
-import people from '../../data/some_people.json';
-import { PersonMarker } from "../PersonMarker/PersonMarker";
+import people from '../../data/all_people_some_ny.json';
 import professions from '../../data/some_professions.json';
-import EllipseFromCov from "../Ellipse/EllipseFromCov";
 import ColorBar from "../ColorBar/ColorBar";
+import EllipseFromCov from "../Ellipse/EllipseFromCov";
+import { PersonMarker } from "../PersonMarker/PersonMarker";
+import MapSettings from "./MapSettings";
+import { getColorScale, getEllipseData, lausanne, new_york } from "./util";
 
-
-interface MapProps {
-  position: LatLngExpression
-  zoom: number
-  city : "lausanne" | "new york"
-}
-
-function getColorScale() {
-
-  const theme = useMantineTheme();
-  const colorScale = d3.scaleSequential()
-      .domain([0, 1])
-      .interpolator(d3.interpolate(theme.white, theme.colors.space[7]));
-
-  return colorScale;
-}
-
-
-function getEllipseData(profession:any, nrGaussians: number, colorScale: d3.ScaleSequential<string, never>){
-
-  if (nrGaussians < 1){
-    console.log("can't load data without nr of gaussians selected")
-    return []
-  }
-  let dataArr = []
-
-  for (let i = 0; i < nrGaussians; i++){
-    
-    let color = colorScale(profession["priors_"+nrGaussians][i])
-    dataArr.push({
-      center: profession["mu_"+nrGaussians][i],
-      sigma: profession["sigma_"+nrGaussians][i],
-      options:{
-        color: color,
-        fillColor: color,
-        fillOpacity: 0.5,
-        opacity: 0.3,
-        weight: 2,
-      }
-    })
-  }
-  return dataArr
-}
-
-export default function Map({ position, zoom, city}: MapProps) {
-  const [opac, setOpac] = useState(1);
-  const [map32, set32] = useState(true);
+export default function Map({ city_name }: {
+  city_name: "lausanne" | "new york"
+}) {
+  const [layerOpacity, setLayerOpacity] = useState(1);
+  const [layer, setLayer] = useState<string>('berney');
   const [job, setJob] = useState<ComboboxItem | null>(null);
-  const [nrGaussians, setNrGaussians] = useState(0)
+  const [nrGaussians, setNrGaussians] = useState<number>(0)
 
   const colorScale = getColorScale();
 
+  const city = city_name === 'lausanne' ? lausanne : new_york;
+  const jobs = people.map(person => person.job).filter(
+    (v, ix, arr) => arr.indexOf(v) === ix
+  );
+
   return <>
-    <MapContainer center={position} zoom={zoom} style={{ height: "100%", width: "100%"}}>
+    <MapContainer center={city.position} zoom={city.zoom} style={{ height: "100%", width: "100%" }}>
       {/* found here: https://leaflet-extras.github.io/leaflet-providers/preview/ */}
       <TileLayer
         attribution='&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png"
       />
       {
-        map32 ?
         <TileLayer
           attribution=''
-          url="berney/{z}/{x}/{y}.png"
-          opacity={opac}
-          tms
-        />
-        :
-        <TileLayer
-          attribution=''
-          url="sprengler/{z}/{x}/{y}.png"
-          opacity={opac}
+          url={`${layer}/{z}/{x}/{y}.png`}
+          opacity={layerOpacity}
           tms
         />
       }
       {
-        people.filter(
+        people.filter(person => person.city === city_name).filter(
           person => job ? person['job'] === job.value : true
-        ).map((person, i) => 
-        <PersonMarker person={person} key={i}/>)
+        ).map((person, i) =>
+          <PersonMarker person={person} key={i} />)
       }
       {
         professions.filter(
-          profession => 
+          profession =>
             (job ? profession['job'] === job.value : false) &&
-            (profession['city'] === city)
+            (profession['city'] === city_name)
         ).flatMap((profession, i) => {
-          
+
           let ellipseDataArr = getEllipseData(profession, nrGaussians, colorScale);
           // console.log(ellipseDataArr);
           return ellipseDataArr.map((ellipseData, j) =>
-            <EllipseFromCov center={ellipseData.center} sigma={ellipseData.sigma} options={ellipseData.options} key={i*10 + j}/>
+            <EllipseFromCov center={ellipseData.center} sigma={ellipseData.sigma} options={ellipseData.options} key={i * 10 + j} />
           )
         })
       }
-      <Title tt="capitalize"
-        style={{ position: "absolute", left: 60, top: 10, zIndex: 1000}}>
-        {city}
+      <Title tt="capitalize" lh='1'
+        style={{ position: "absolute", left: 51, top: 8, zIndex: 800 }}>
+        {city_name}
       </Title>
-      <Select
-        data={[{ value: 'architecte', label: 'architecte' }, { value: 'charcuti.', label: 'charcuti.' }]}
-        placeholder="filter by job"
-        value={job ? job.value : null}
-        onChange={(_value, option) => setJob(option)}
-        clearable
-        searchable
-        style={{ position: "absolute", right: 10, top: 10, zIndex: 1000}}
-        styles={{
-          dropdown: { zIndex: 1000 }
-        }}
+      <MapSettings jobs={jobs}
+        layerOpacity={layerOpacity} setLayerOpacity={setLayerOpacity}
+        layer={layer} setLayer={setLayer}
+        job={job} setJob={setJob}
+        nrGaussians={nrGaussians} setNrGaussians={setNrGaussians}
+        city={city}
       />
+      <Paper p='xs' withBorder style={{ position: 'absolute', left: 10, bottom: 10, zIndex: 500 }}>
+        <Stack gap={0}>
+          <Text size="xs">Gaussian Weight</Text>
+          <ColorBar width={150} height={15} colorMap={colorScale} />
+        </Stack>
+      </Paper>
     </MapContainer>
-    <Group>
-      <Slider value={opac} onChange={setOpac} min={0} max={1} step={0.05}
-        label='old map opacity'
-        style={{ zIndex: 1000, width: 100 }}
-        />
-      <Switch
-        checked={map32}
-        label='berney / sprengler'
-        onChange={(event) => set32(event.currentTarget.checked)}
-      />
-      <Slider value={nrGaussians} onChange={setNrGaussians} min={0} max={4} step={1} disabled={job?false:true}
-        label='nr gaussians'
-        marks={[
-          { value: 0, label: '0' },
-          { value: 2, label: '2' },
-          { value: 4, label: '4' },
-        ]}
-        style={{ zIndex: 1000, width: 100 }}
-        />
-      <Flex justify={"flex-start"} align={"flex-start"} direction={"column"} wrap={"nowrap"}>
-        <Text size="xs">prior colormap</Text>
-        <ColorBar width={150} height={15} colorMap={colorScale}/>
-      </Flex>
-    </Group>
   </>
 }

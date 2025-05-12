@@ -5,7 +5,7 @@ import { BASE } from '../Shell/Shell';
 export function Dashboard() {
   return (
     <>
-      <Title className={classes.title} ta="center" mt={50}>
+      <Title className={classes.title} ta="center" mt='sm'>
         <Text inherit variant="gradient" component="span" gradient={{ from: 'space', to: 'amaranth' }}>
           Cross-Atlantic<br/>Labor Landscapes
         </Text>

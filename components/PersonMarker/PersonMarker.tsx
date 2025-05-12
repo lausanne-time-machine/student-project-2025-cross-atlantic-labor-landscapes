@@ -1,10 +1,11 @@
 import { CircleMarker, Popup } from "react-leaflet";
 import classes from './PersonMarker.module.css';
+import { Code } from "@mantine/core";
 
 interface personProps {
     city: string;
     year: number;
-    id: string;
+    id: number;
     job: string;
     name: string;
     job_desc: string;
@@ -17,9 +18,9 @@ export function PersonMarker({ person }: { person: personProps }) {
     return <CircleMarker center={[person['latitude'], person['longitude']]} radius={8}
         className={classes.person_marker}>
         <Popup>
-            {/* <Paper shadow='md' style={{ margin: -16}} p='sm'> */}
-                {person['name']}<br />{person['job_desc']}
-            {/* </Paper> */}
+            {person['name']}<br />
+            <Code color='var(--mantine-color-amaranth-light)'>{person['job']}</Code>{(person['job'] != person['job_desc']) && (' (' + person['job_desc'] + ')')}<br />
+            {person['line']}
         </Popup>
     </CircleMarker>
 }

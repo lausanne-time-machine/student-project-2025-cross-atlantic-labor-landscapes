@@ -17,11 +17,11 @@ export function MapsFlex() {
         
     return <Flex className={classes.outer} gap="lg" >
         <Flex className={classes.inner} direction={"column"} gap={"lg"}>
-            <Map position={[46.522, 6.633]} zoom={16} city='lausanne' />
+            <Map city_name='lausanne' />
         </Flex>
 
         <Flex className={classes.inner} direction={"column"} gap={"lg"}>
-            <Map position={[46.522, 6.633]} zoom={16} city='new york' />
+            <Map city_name='new york' />
         </Flex>
     </Flex>
 }
