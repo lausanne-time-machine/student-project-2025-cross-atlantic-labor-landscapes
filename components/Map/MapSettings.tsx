@@ -1,4 +1,4 @@
-import { ActionIcon, ComboboxItem, Group, Input, Popover, SegmentedControl, Select, Slider, Stack, Switch, Text } from "@mantine/core";
+import { ActionIcon, Checkbox, ComboboxItem, Group, Input, Popover, SegmentedControl, Select, Slider, Stack, Switch, Text } from "@mantine/core";
 import { IconMapCog } from "@tabler/icons-react";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { cityProps } from "./util";
@@ -23,8 +23,8 @@ export default function MapSettings(props: settingsProps) {
         layer, setLayer, job, setJob, city,
         nrGaussians, setNrGaussians, lateData, setLateData } = props;
 
-    const [earlylate, setEarlyLate] = useState(lateData ? 'late' : 'early');
-    
+    const [earlylate, setEarlyLate] = useState(lateData ? 'late' : 'early');
+
     useEffect(() => setLateData(earlylate == 'late'), [earlylate])
 
     return <Group gap='sm' style={{ position: "absolute", right: 10, top: 10, zIndex: 800 }}>
@@ -32,7 +32,7 @@ export default function MapSettings(props: settingsProps) {
             size='sm'
             value={earlylate}
             onChange={setEarlyLate}
-            data={[{value: 'early', label: 'early'}, {value: 'late', label: 'late'}]}
+            data={[{ value: 'early', label: 'early' }, { value: 'late', label: 'late' }]}
         />
         <Select
             data={jobs.map(job => ({ value: job, label: job }))}
@@ -71,20 +71,25 @@ export default function MapSettings(props: settingsProps) {
                 </Input.Wrapper>
                 {
                     (city.layers.length > 0) ?
-                        <><Input.Wrapper label="Map Layer" description="Map Author">
-                            <SegmentedControl
-                                value={layer}
-                                onChange={setLayer}
-                                data={city.layers.map(
-                                    layer => ({
-                                        value: layer.name,
-                                        label: <Stack gap={0}>
-                                            <Text tt='capitalize'>{layer.name}</Text>
-                                            <Text size='xs'>{layer.year}</Text>
-                                        </Stack>
-                                    })
-                                )}
-                            />
+                        <><Input.Wrapper label="Map Layer">
+                            <Group>
+                                <Checkbox checked={layer != ''} onChange={(event) => {
+                                    event.currentTarget.checked ? setLayer(city.layers[0].name) : setLayer('')
+                                }} />
+                                <SegmentedControl
+                                    value={layer}
+                                    onChange={setLayer}
+                                    data={city.layers.map(
+                                        layer => ({
+                                            value: layer.name,
+                                            label: <Stack gap={0}>
+                                                <Text tt='capitalize'>{layer.name}</Text>
+                                                <Text size='xs'>{layer.year}</Text>
+                                            </Stack>
+                                        })
+                                    )}
+                                />
+                            </Group>
                         </Input.Wrapper>
                             <Input.Wrapper description='Map Opacity' mt='sm'>
                                 <Slider
@@ -95,7 +100,9 @@ export default function MapSettings(props: settingsProps) {
                             </Input.Wrapper>
                         </>
                         :
-                        <Text c='dimmed' size='sm'>no layers for new york yet</Text>
+                        <Input.Wrapper label="Map Layer">
+                            <Text c='dimmed' size='sm'>no layers for new york yet</Text>
+                        </Input.Wrapper>
                 }
             </Popover.Dropdown>
         </Popover>

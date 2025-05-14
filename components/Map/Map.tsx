@@ -8,6 +8,8 @@ import { MapContainer, TileLayer } from "react-leaflet";
 
 import people_ny from '../../data/ny_people.json';
 import people_ls from '../../data/laus_people.json';
+import tokens_ny from '../../data/ny_tokens.json';
+import tokens_ls from '../../data/los_tokens.json';
 import professions from '../../data/some_professions.json';
 import ColorBar from "../ColorBar/ColorBar";
 import EllipseFromCov from "../Ellipse/EllipseFromCov";
@@ -19,18 +21,16 @@ export default function Map({ city_name }: {
   city_name: "lausanne" | "new york"
 }) {
   const [layerOpacity, setLayerOpacity] = useState(1);
-  const [layer, setLayer] = useState<string>('berney');
+  const [layer, setLayer] = useState<string>('');
   const [job, setJob] = useState<ComboboxItem | null>(null);
   const [nrGaussians, setNrGaussians] = useState<number>(0);
-  const [lateData, setLateData] = useState(true);
+  const [lateData, setLateData] = useState(false);
 
   const colorScale = getColorScale();
 
   const city = city_name === 'lausanne' ? lausanne : new_york;
   let people = (city_name == "new york" ? people_ny : people_ls) as personProps[];
-  const jobs = people.map(person => person.job).filter(
-    (v, ix, arr) => arr.indexOf(v) === ix
-  );
+  let jobs = (city_name == "new york" ? tokens_ny.sort() : tokens_ls.sort())
   let earlyYear =  city_name == "new york" ? 1850 : 1832;
   let lateYear = city_name == "new york" ? 1879 : 1885;
 
@@ -42,6 +42,7 @@ export default function Map({ city_name }: {
         url="https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png"
       />
       {
+        layer != '' &&
         <TileLayer
           attribution=''
           url={`${layer}/{z}/{x}/{y}.png`}
