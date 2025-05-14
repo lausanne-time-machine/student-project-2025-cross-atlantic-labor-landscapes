@@ -81,7 +81,7 @@ export default function Map({ city_name }: {
         job={job} setJob={setJob}
         nrGaussians={nrGaussians} setNrGaussians={setNrGaussians}
         lateData={lateData} setLateData={setLateData}
-        city={city}
+        city={city} early={earlyYear} late={lateYear}
       />
       <Paper p='xs' withBorder style={{ position: 'absolute', left: 10, bottom: 10, zIndex: 500 }}>
         <Stack gap={0}>

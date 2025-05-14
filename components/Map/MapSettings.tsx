@@ -16,12 +16,15 @@ interface settingsProps {
     lateData: boolean
     setLateData: Dispatch<SetStateAction<boolean>>
     city: cityProps
+    early: number
+    late: number
 }
 
 export default function MapSettings(props: settingsProps) {
     const { jobs, layerOpacity, setLayerOpacity,
         layer, setLayer, job, setJob, city,
-        nrGaussians, setNrGaussians, lateData, setLateData } = props;
+        nrGaussians, setNrGaussians, lateData,
+        setLateData, early, late } = props;
 
     const [earlylate, setEarlyLate] = useState(lateData ? 'late' : 'early');
 
@@ -32,7 +35,7 @@ export default function MapSettings(props: settingsProps) {
             size='sm'
             value={earlylate}
             onChange={setEarlyLate}
-            data={[{ value: 'early', label: 'early' }, { value: 'late', label: 'late' }]}
+            data={[{ value: 'early', label: early }, { value: 'late', label: late }]}
         />
         <Select
             data={jobs.map(job => ({ value: job, label: job }))}
