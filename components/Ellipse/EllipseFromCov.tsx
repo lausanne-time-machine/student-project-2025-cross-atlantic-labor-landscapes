@@ -10,17 +10,22 @@ interface EllipseFromCovProps {
 
 function getEllipseProps(props:EllipseFromCovProps){
   const { center, sigma, options } = props;
-  const r1 = Math.sqrt((sigma[0][0] + sigma[1][1])/2.0 +  Math.sqrt(Math.pow((sigma[0][0] - sigma[1][1])/2.0, 2) + Math.pow(sigma[0][1], 2)))
-  const r2 = Math.sqrt((sigma[0][0] + sigma[1][1])/2.0 -  Math.sqrt(Math.pow((sigma[0][0] - sigma[1][1])/2.0, 2) + Math.pow(sigma[0][1], 2)))
+
+  let c = sigma[0][0] * 1e10;
+  let b = sigma[0][1] * 1e10;
+  let a = sigma[1][1] * 1e10;
+
+  const r1 = Math.sqrt((a + c)/2.0 +  Math.sqrt(Math.pow((a - c)/2.0, 2) + Math.pow(b, 2)))
+  const r2 = Math.sqrt((a + c)/2.0 -  Math.sqrt(Math.pow((a - c)/2.0, 2) + Math.pow(b, 2)))
 
   let tilt = 0
   
-  if (sigma[0][1] == 0){
-    if (sigma[0][0] < sigma[1][1]){
-      tilt = Math.PI/2
+  if (b == 0){
+    if (a < c){
+      tilt = -Math.PI/2
     }
   }else{
-    tilt = Math.atan2(Math.pow(r1, 2) - sigma[0][0], sigma[0][1])
+    tilt = -Math.atan2(Math.pow(r1, 2) - a, b)
   }
 
   tilt = tilt * 180 / Math.PI

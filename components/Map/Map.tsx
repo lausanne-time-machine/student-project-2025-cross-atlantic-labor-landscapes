@@ -10,12 +10,12 @@ import people_ny from '../../data/ny_people.json';
 import people_ls from '../../data/laus_people.json';
 import tokens_ny from '../../data/ny_tokens.json';
 import tokens_ls from '../../data/los_tokens.json';
-import professions from '../../data/some_professions.json';
+import professions from '../../data/professions.json';
 import ColorBar from "../ColorBar/ColorBar";
 import EllipseFromCov from "../Ellipse/EllipseFromCov";
 import { PersonMarker, personProps } from "../PersonMarker/PersonMarker";
 import MapSettings from "./MapSettings";
-import { getColorScale, getEllipseData, lausanne, new_york } from "./util";
+import { getColorScale, getEllipseData, lausanne, new_york, profProps } from "./util";
 
 export default function Map({ city_name }: {
   city_name: "lausanne" | "new york"
@@ -31,8 +31,11 @@ export default function Map({ city_name }: {
   const city = city_name === 'lausanne' ? lausanne : new_york;
   let people = (city_name == "new york" ? people_ny : people_ls) as personProps[];
   let jobs = (city_name == "new york" ? tokens_ny.sort() : tokens_ls.sort())
-  let earlyYear =  city_name == "new york" ? 1850 : 1832;
+  let earlyYear = city_name == "new york" ? 1850 : 1832;
   let lateYear = city_name == "new york" ? 1879 : 1885;
+  let year = (lateData ? lateYear : earlyYear);
+  let profession : profProps = job ? (professions as any)[city_name][job.value] ? (professions as any)[city_name][job.value][year] : null : null;
+  let ellipseDataArr = profession ? getEllipseData(profession, nrGaussians, colorScale) : null;
 
   return <>
     <MapContainer center={city.position} zoom={city.zoom} style={{ height: "100%", width: "100%" }}>
@@ -52,29 +55,30 @@ export default function Map({ city_name }: {
       }
       {
         people.filter(
-          person => (job ? person['job'] === job.value : false) &&
-          (lateData ? person["year"] === lateYear : person["year"] === earlyYear)
-        ).map((person, i) => 
-        <PersonMarker person={person} key={i}/>)
+          person => (job ? person['job'] === job.value : false) && person["year"] === year
+        ).map((person, i) =>
+          <PersonMarker person={person} key={i} />)
       }
       {
-        professions.filter(
-          profession =>
-            (job ? profession['job'] === job.value : false) &&
-            (profession['city'] === city_name)
-        ).flatMap((profession, i) => {
-
-          let ellipseDataArr = getEllipseData(profession, nrGaussians, colorScale);
-          // console.log(ellipseDataArr);
-          return ellipseDataArr.map((ellipseData, j) =>
-            <EllipseFromCov center={ellipseData.center} sigma={ellipseData.sigma} options={ellipseData.options} key={i * 10 + j} />
-          )
-        })
+        ellipseDataArr &&
+        ellipseDataArr.map((ellipseData, i) =>
+          <EllipseFromCov center={ellipseData.center} sigma={ellipseData.sigma} options={ellipseData.options} key={i} />
+        )
       }
       <Title tt="capitalize" lh='1'
         style={{ position: "absolute", left: 51, top: 8, zIndex: 800 }}>
         {city_name}
+        <br/>
       </Title>
+      {/* <Title size='xs'
+        style={{ position: "absolute", left: 51, top: 80, zIndex: 800 }}>
+        {ellipseDataArr && ellipseDataArr[0] && (ellipseDataArr[0].sigma as number[][]).map(l => l.join(', ')).map(s =>
+          <>
+            <br/>
+            {s}
+          </>
+        )}
+      </Title> */}
       <MapSettings jobs={jobs}
         layerOpacity={layerOpacity} setLayerOpacity={setLayerOpacity}
         layer={layer} setLayer={setLayer}

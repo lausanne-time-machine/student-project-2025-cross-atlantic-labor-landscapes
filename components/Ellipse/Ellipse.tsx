@@ -16,6 +16,8 @@ function createEllipse(props:ellipseProps, context:any) {
 
   // @ts-ignore
   const instance  = new L.ellipse(center, radii, tilt, options);
+  instance.bringToFront(); // sometimes markers are still over ellipses, well well
+  // when you already have markers & ellipses and change to job w/ more points
   return {
     instance,
     context: { ...context, overlayContainer: instance },
@@ -34,6 +36,7 @@ function updateEllipse(instance:any, props:ellipseProps, prevProps:ellipseProps)
     instance.setLatLng(props.center);
     instance.setRadius(props.radii);
     instance.setTilt(props.tilt);
+    instance.bringToFront();
   }
 }
 

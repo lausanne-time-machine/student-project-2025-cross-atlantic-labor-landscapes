@@ -40,6 +40,7 @@ export function getEllipseData(profession: any, nrGaussians: number, colorScale:
 }
 
 export interface cityProps {
+    name: "lausanne" | "new york"
     zoom: number
     position: LatLngExpression
     layers: {
@@ -48,7 +49,24 @@ export interface cityProps {
     }[]
 }
 
+export interface profProps {
+    n: number
+    priors_1: number[]
+    mu_1: number[][]
+    sigma_1: number[][][]
+    priors_2: number[]
+    mu_2: number[][]
+    sigma_2: number[][][]
+    priors_3: number[]
+    mu_3: number[][]
+    sigma_3: number[][][]
+    priors_4: number[]
+    mu_4: number[][]
+    sigma_4: number[][][]
+}
+
 export const lausanne: cityProps = {
+    name: "lausanne",
     zoom: 16,
     position: [46.522, 6.633],
     layers: [
@@ -58,6 +76,7 @@ export const lausanne: cityProps = {
 }
 
 export const new_york: cityProps = {
+    name: "new york",
     zoom: 13,
     position: [40.73, -73.99],
     layers: []

@@ -1,7 +1,8 @@
 import { ActionIcon, Checkbox, ComboboxItem, Group, Input, Popover, SegmentedControl, Select, Slider, Stack, Switch, Text } from "@mantine/core";
 import { IconMapCog } from "@tabler/icons-react";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { cityProps } from "./util";
+import { cityProps, profProps } from "./util";
+import professions from '../../data/professions.json';
 
 interface settingsProps {
     jobs: string[]
@@ -25,6 +26,7 @@ export default function MapSettings(props: settingsProps) {
         layer, setLayer, job, setJob, city,
         nrGaussians, setNrGaussians, lateData,
         setLateData, early, late } = props;
+    let year = (lateData ? late : early);
 
     const [earlylate, setEarlyLate] = useState(lateData ? 'late' : 'early');
 
@@ -35,10 +37,12 @@ export default function MapSettings(props: settingsProps) {
             size='sm'
             value={earlylate}
             onChange={setEarlyLate}
-            data={[{ value: 'early', label: early }, { value: 'late', label: late }]}
+            data={[{ value: 'early', label: early }, { value: 'late', label: late, disabled: city.name === "lausanne" }]}
         />
         <Select
-            data={jobs.map(job => ({ value: job, label: job }))}
+            data={Object.keys(professions[city.name]).map(job => ({ value: job, label: `${job} (${
+                (((professions[city.name] as any)[job] as any)[year] as profProps)?.n??0
+            })` }))}
             placeholder="filter by job"
             value={job ? job.value : null}
             onChange={(_value, option) => setJob(option)}
